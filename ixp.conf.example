@@ -1,0 +1,59 @@
+{
+    "scenario_name": "<the scenario name of the IXP>",
+    "host_interface": "<host interface where to attach the external LAN>",
+    "peering_lan": {
+        "4": "<IPv4 peering LAN subnet>",
+        "6": "<IPv6 peering LAN subnet>"
+    },
+    "peering_configuration": {
+        "type": "<type of peering configuration, either raw_json or ixp_manager are allowed>",
+        "path": "<JSON file in resources folder>"
+    },
+    "rib_dumps": {
+        "type": "<type of RIB dumps file, allowed values are open_bgpd and bird>",
+        "dumps": {
+            "4": "<IPv4 table dump exported from openbgpd, .dump file extension>",
+            "6": "<IPv6 table dump exported from openbgpd, .dump file extension>"
+        }
+    },
+    "route_servers": {
+        "<route server device name>": {
+            "type": "<type of daemon, allowed values are open_bgpd and bird>",
+            "image": "<Docker image to use for the route server>",
+            "as_num": <AS number of the RS, as integer>,
+            "config": "<router configuration file or path of the RS>",
+            "address": "<IP address of the RS, without netmask, either IPv4 and IPv6 are allowed>"
+        }
+    },
+    "rpki": [
+        {
+            "type": "<type of RPKI server, allowed values are external (connect to a real server) or internal (emulate the RPKI server)>",
+            "address": "<IPv4 address of the RPKI server>",
+            "port": <port of the RPKI service>,
+            "protocol": "<RPKI service protocol>"
+        },
+        <add more RPKI servers in this list>
+    ],
+    "quarantine": {
+        "actions": [
+            "connectivity.CheckPingAction",
+            "connectivity.CheckPingMtuAction",
+            "connectivity.CheckProxyArpAction",
+            "bgp.CheckBgpSessionAction",
+			"bgp.CheckBgpRibAction",
+            "security.CheckServicesAction",
+            "security.CheckTrafficAction"
+        ],
+        "proxy_arp_ips": [<list of IPs to use in the proxy check, add/remove from this list>, "8.8.8.8", "10.0.0.1", "192.168.0.1", "172.16.1.1"],
+		"max_rib_prefixes": {
+		    "4": <number of IPv4 prefixes allowed in the IXP>,
+		    "6": <number of IPv6 prefixes allowed in the IXP>
+        },
+        "traffic_dump_mins": <number of minutes to dump traffic for the Traffic Quarantine Check>,
+        "probe_ips": {
+            "4": "<IPv4 address to use for the probe machine>",
+            "6": "<IPv6 address to use for the probe machine>"
+        },
+        "dns_name": "<a DNS name used in the Quarantine DNS Check>"
+    }
+}

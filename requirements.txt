@@ -1,0 +1,3 @@
+kathara>=3.7.9
+coloredlogs
+docker
