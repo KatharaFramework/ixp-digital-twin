@@ -149,6 +149,6 @@ The ixp-digital-twin project is an open source project funded and created in col
 with [Namex](https://www.namex.it/),
 the IXP of Rome.
 
-Currently, also VSIX funds and collaborates on the project.
+Currently, also [VSIX](https://www.vs-ix.org) funds and collaborates on the project.
 
 If you want to collaborate on the project or on new ideas, please contact us at `contact@kathara.org`.
