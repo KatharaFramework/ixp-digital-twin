@@ -108,11 +108,6 @@ For more details refer to: https://github.com/KatharaFramework/ixp-quarantine-da
 
 ## Running the Quarantine Checks
 
-The `check.py` script is used to validate configurations and perform necessary checks on network devices or peers. Below
-is a guide on how to execute the script and configure its input parameters.
-
-#### Usage
-
 To run the quarantine checks, use the following command syntax:
 
 ```shell script
