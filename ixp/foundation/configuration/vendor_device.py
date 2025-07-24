@@ -9,7 +9,7 @@ from .vendor_format_parser_mixin import VendorFormatParserMixin
 
 class VendorDevice(VendorCommandsMixin, VendorFormatParserMixin, ABC):
     @abstractmethod
-    def config_apply_to_device(self, device: Machine, config_path: str, image) -> None:
+    def config_apply_to_device(self, device: Machine, config_path: str, image: str, options: dict = None) -> None:
         raise NotImplementedError("You must implement `config_apply_to_device` method.")
 
     @abstractmethod

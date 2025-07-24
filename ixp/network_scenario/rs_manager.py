@@ -42,7 +42,8 @@ class RouteServerManager(ScenarioConfigurationApplier):
                 self.connect_backbone(rs_device)
 
             conf = self.get_config(rs["type"])
-            conf.config_apply_to_device(rs_device, os.path.join(RESOURCES_FOLDER, rs["config"]), rs['image'])
+            conf.config_apply_to_device(rs_device, os.path.join(RESOURCES_FOLDER, rs["config"]), rs['image'],
+                                        options=rs["options"] if "options" in rs else None)
 
             logging.success(f"Device `{name}` created.")
 

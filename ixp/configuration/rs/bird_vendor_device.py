@@ -4,18 +4,22 @@ import os
 from datetime import datetime
 from typing import Callable
 
+from Kathara.model.Lab import Lab
 from Kathara.model.Machine import Machine
 
 from ... import utils
 from ...foundation.configuration.vendor_device import VendorDevice
+from ...globals import BIRDWATCHER_GATEWAY_DEVICE_NAME, RESOURCES_FOLDER, \
+    BIRDWATCHER_IPV4_CD_NAME, BIRDWATCHER_IPV6_CD_NAME
 from ...regex import BIRD_SESSION_REMOTE_AS, BIRD_SESSION_UPTIME, BIRD_RIB_NEXTHOP, BIRD_RIB_PREFIX, BIRD_RIB_AS_PATH
 
 
 class BirdVendorDevice(VendorDevice):
-    def config_apply_to_device(self, device: Machine, config_path: str, image: str) -> None:
+    def config_apply_to_device(self, device: Machine, config_path: str, image: str, options: dict = None) -> None:
         logging.info(f"Configuring BIRD in device `{device.name}`...")
         device.add_meta("image", image)
         bird_bin = self.get_bird_bin(device)
+
         if os.path.isdir(config_path):
             device.copy_directory_from_path(config_path, f"/etc/bird/")
         else:
@@ -26,6 +30,79 @@ class BirdVendorDevice(VendorDevice):
             startup.write("chown bird:bird /usr/local/var/log\n")
             startup.write(f"sleep 3\n")
             startup.write(f"/etc/init.d/{bird_bin} start\n")
+
+        if options and "birdwatcher" in options:
+            self._configure_birdwatcher_on_rs(device, options["birdwatcher"])
+            self._configure_external_gw(device, options["birdwatcher"])
+
+    def _configure_birdwatcher_on_rs(self, device: Machine, birdwatcher_options: dict) -> None:
+        logging.info(f"Configuring BIRDWATCHER on device `{device.name}`...")
+        if device.is_ipv6_enabled():
+            device.lab.update_startup_file_from_string(device, "birdwatcher -6 &\n")
+        else:
+            device.lab.update_startup_file_from_string(device, "birdwatcher &\n")
+
+        if device.is_ipv6_enabled():
+            iface = device.lab.connect_machine_obj_to_link(device, BIRDWATCHER_IPV6_CD_NAME)
+        else:
+            iface = device.lab.connect_machine_obj_to_link(device, BIRDWATCHER_IPV4_CD_NAME)
+
+        device.lab.update_startup_file_from_string(
+            device,
+            f"ip address add {birdwatcher_options['birdwatcher_ip']} dev eth{iface.num}\n",
+        )
+        device.create_file_from_path(os.path.join(RESOURCES_FOLDER, birdwatcher_options["config"]),
+                                     "/etc/birdwatcher/birdwatcher.conf")
+
+    def _configure_external_gw(self, device: Machine, birdwatcher_options: dict) -> None:
+        net_scenario = device.lab
+        if not net_scenario.has_machine(BIRDWATCHER_GATEWAY_DEVICE_NAME):
+            gateway_device = net_scenario.new_machine(BIRDWATCHER_GATEWAY_DEVICE_NAME)
+            gateway_device.add_meta("bridged", True)
+            gateway_device.add_meta("ipv6", True)
+        else:
+            gateway_device = net_scenario.get_machine(BIRDWATCHER_GATEWAY_DEVICE_NAME)
+
+        if ipaddress.ip_interface(birdwatcher_options["gateway_ip"]).ip.version == 4:
+            iface = net_scenario.connect_machine_obj_to_link(gateway_device, BIRDWATCHER_IPV4_CD_NAME)
+        else:
+            iface = net_scenario.connect_machine_obj_to_link(gateway_device, BIRDWATCHER_IPV6_CD_NAME)
+
+        net_scenario.update_startup_file_from_string(
+            gateway_device,
+            f"ip address add {birdwatcher_options['gateway_ip']} dev eth{iface.num}\n",
+        )
+
+        gateway_device.add_meta("port",
+                                f"{birdwatcher_options['host_port']}:{birdwatcher_options['birdwatcher_port']}/tcp")
+
+        logging.info(f"Exposing BIRDWATCHER on port {birdwatcher_options['birdwatcher_port']}...")
+
+        if device.is_ipv6_enabled():
+            cmd = self._get_external_command_ipv6(birdwatcher_options)
+        else:
+            cmd = self._get_external_command_ipv4(birdwatcher_options)
+
+        net_scenario.update_startup_file_from_string(gateway_device, f"{cmd}\n")
+
+    def _get_external_command_ipv4(self, options: dict) -> str:
+        birdwatcher_ip = ipaddress.ip_interface(options['birdwatcher_ip']).ip.__str__()
+        return (
+            f"iptables -t nat -A PREROUTING -p tcp --dport 29184 -j DNAT --to-destination "
+            f"{birdwatcher_ip}:29184\n"
+            f"iptables -A FORWARD -p tcp -d {birdwatcher_ip} --dport {options['birdwatcher_port']} -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT\n"
+            f"iptables -A FORWARD -p tcp -s {birdwatcher_ip} --sport {options['birdwatcher_port']} -m state --state ESTABLISHED,RELATED -j ACCEPT\n"
+            f"iptables -t nat -A POSTROUTING -d {birdwatcher_ip} -p tcp --dport {options['birdwatcher_port']} -j MASQUERADE\n"
+        )
+
+    def _get_external_command_ipv6(self, options: dict) -> str:
+        birdwatcher_ip = ipaddress.ip_interface(options['birdwatcher_ip']).ip.__str__()
+        return (
+            f"ip6tables -t nat -A PREROUTING -p tcp --dport {options['birdwatcher_port']} -j DNAT --to-destination [{birdwatcher_ip}]:{options['birdwatcher_port']}\n"
+            f"ip6tables -A FORWARD -p tcp -d {birdwatcher_ip} --dport {options['birdwatcher_port']} -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT\n"
+            f"ip6tables -A FORWARD -p tcp -s {birdwatcher_ip} --sport {options['birdwatcher_port']} -m state --state ESTABLISHED,RELATED -j ACCEPT\n"
+            f"ip6tables -t nat -A POSTROUTING -d {birdwatcher_ip} -p tcp --dport {options['birdwatcher_port']} -j MASQUERADE\n"
+        )
 
     def config_info_for_device(self, device: Machine, config: str) -> (dict[str, str], str, Callable):
         bird_bin = self.get_bird_bin(device)
