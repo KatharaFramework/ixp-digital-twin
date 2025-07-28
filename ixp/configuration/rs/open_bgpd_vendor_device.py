@@ -9,7 +9,7 @@ from ...regex import OPENBGPD_SESSION_REMOTE_AS, OPENBGPD_SESSION_UPTIME, OPENBG
 
 
 class OpenBgpdVendorDevice(VendorDevice):
-    def config_apply_to_device(self, device: Machine, config_path: str, image: str) -> None:
+    def config_apply_to_device(self, device: Machine, config_path: str, image: str, options: dict = None) -> None:
         logging.info(f"Configuring OpenBGPD in device `{device.name}`...")
         device.add_meta("image", image)
         device.create_file_from_path(config_path, "/etc/bgpd.conf")

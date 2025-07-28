@@ -39,11 +39,11 @@ class BirdVendorDevice(VendorDevice):
             self._configure_external_gw(device, options["birdwatcher"])
 
     def _configure_birdwatcher_on_rs(self, device: Machine, birdwatcher_options: dict) -> None:
-        logging.info(f"Configuring BIRDWATCHER on device `{device.name}`...")
+        logging.info(f"Configuring birdwatcher on device `{device.name}`...")
         if device.is_ipv6_enabled():
-            device.lab.update_startup_file_from_string(device, "birdwatcher -6 &\n")
+            device.lab.update_startup_file_from_string(device, "systemctl start birdwatcher6\n")
         else:
-            device.lab.update_startup_file_from_string(device, "birdwatcher &\n")
+            device.lab.update_startup_file_from_string(device, "systemctl start birdwatcher4\n")
 
         iface = device.lab.connect_machine_obj_to_link(device, BIRDWATCHER_CD_NAME)
 
@@ -52,15 +52,16 @@ class BirdVendorDevice(VendorDevice):
             device,
             f"ip address add {birdwatcher_options['birdwatcher_ip']} dev eth{iface.num}\n",
         )
-        device.create_file_from_path(os.path.join(RESOURCES_FOLDER, birdwatcher_options["config"]),
-                                     "/etc/birdwatcher/birdwatcher.conf")
+        device.create_file_from_path(
+            os.path.join(RESOURCES_FOLDER, birdwatcher_options["config"]),
+            "/etc/birdwatcher/birdwatcher.conf"
+        )
 
     def _configure_external_gw(self, device: Machine, birdwatcher_options: dict) -> None:
         net_scenario = device.lab
         if not net_scenario.has_machine(BIRDWATCHER_GATEWAY_DEVICE_NAME):
             gateway_device = net_scenario.new_machine(BIRDWATCHER_GATEWAY_DEVICE_NAME)
             gateway_device.add_meta("bridged", True)
-            gateway_device.add_meta("ipv6", True)
             iface = net_scenario.connect_machine_obj_to_link(gateway_device, BIRDWATCHER_CD_NAME)
             net_scenario.update_startup_file_from_string(
                 gateway_device,
@@ -72,7 +73,7 @@ class BirdVendorDevice(VendorDevice):
         gateway_device.add_meta("port",
                                 f"{birdwatcher_options['port']}:{birdwatcher_options['port']}/tcp")
 
-        logging.info(f"Exposing BIRDWATCHER on port {birdwatcher_options['port']}...")
+        logging.info(f"Exposing birdwatcher on port {birdwatcher_options['port']}...")
 
         cmd = self._get_external_command(birdwatcher_options)
 
@@ -83,8 +84,6 @@ class BirdVendorDevice(VendorDevice):
         return (
             f"iptables -t nat -A PREROUTING -p tcp --dport {options['port']} -j DNAT --to-destination "
             f"{birdwatcher_ip}:{options['port']}\n"
-            f"iptables -A FORWARD -p tcp -d {birdwatcher_ip} --dport {options['port']} -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT\n"
-            f"iptables -A FORWARD -p tcp -s {birdwatcher_ip} --sport {options['port']} -m state --state ESTABLISHED,RELATED -j ACCEPT\n"
             f"iptables -t nat -A POSTROUTING -d {birdwatcher_ip} -p tcp --dport {options['port']} -j MASQUERADE\n"
         )
 
