@@ -19,6 +19,7 @@ class OpenBgpdTableDump(TableDump):
         if "flags" in lines[0]:
             lines = lines[6:]
 
+        missing_ases = set()
         for line in lines:
             if not line:
                 continue
@@ -38,9 +39,12 @@ class OpenBgpdTableDump(TableDump):
             neighbor_ip_address = ipaddress.ip_address(neighbor_ip)
 
             if neighbor_name not in self.entries:
-                logging.warning(f"`{neighbor_name}` not found in members configuration! Skipping...")
+                missing_ases.add(neighbor_name)
                 continue
 
             for router in self.entries[neighbor_name].routers.values():
                 if router.has_peering(neighbor_ip_address):
                     router.add_route(network, path_list)
+
+        for neighbor_name in missing_ases:
+            logging.warning(f"`{neighbor_name}` not found in members configuration! Skipped...")
