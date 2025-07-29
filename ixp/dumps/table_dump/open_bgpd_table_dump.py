@@ -37,6 +37,10 @@ class OpenBgpdTableDump(TableDump):
             neighbor_name = f"as{neighbor_as}"
             neighbor_ip_address = ipaddress.ip_address(neighbor_ip)
 
+            if neighbor_name not in self.entries:
+                logging.warning(f"`{neighbor_name}` not found in members configuration! Skipping...")
+                continue
+
             for router in self.entries[neighbor_name].routers.values():
                 if router.has_peering(neighbor_ip_address):
                     router.add_route(network, path_list)

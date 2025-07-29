@@ -64,6 +64,11 @@ class BirdTableDump(TableDump):
                 continue
 
         for route in routes:
-            for router in self.entries[f'as{route["as"]}'].routers.values():
+            as_name = f'as{route["as"]}'
+            if as_name not in self.entries:
+                logging.warning(f"`{as_name}` not found in members configuration! Skipping...")
+                continue
+
+            for router in self.entries[as_name].routers.values():
                 if router.has_peering(route['neighbor_ip_address']):
                     router.add_route(str(route['network']), route['attributes']['as_path'])
