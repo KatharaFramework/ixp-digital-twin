@@ -36,6 +36,7 @@ class BirdTableDump(TableDump):
                     'attributes': {}
                 }
                 routes.append(current_route)
+                continue
 
             # Match next hop
             match = re.match(rf'^via (.+) on (\w+)', line)
