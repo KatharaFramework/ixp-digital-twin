@@ -37,6 +37,18 @@ class BirdTableDump(TableDump):
                 }
                 routes.append(current_route)
                 continue
+            else:
+                match = re.match(rf'\w+\s+\[(\w+) (.*?)\]', line)
+                if match:
+                    neighbor_name, timestamp = match.groups()
+                    current_route = {
+                        'network': current_route['network'],
+                        'neighbor_name': neighbor_name,
+                        'timestamp': timestamp,
+                        'attributes': {}
+                    }
+                    routes.append(current_route)
+                    continue
 
             # Match next hop
             match = re.match(rf'^via (.+) on (\w+)', line)
