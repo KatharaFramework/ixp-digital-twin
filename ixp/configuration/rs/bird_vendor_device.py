@@ -135,7 +135,7 @@ class BirdVendorDevice(VendorDevice):
 
         matches = BIRD_SESSION_UPTIME.search(bgp_output)
         uptime = (
-            datetime.now() - datetime.strptime(matches.group(1).strip(), "%Y-%m-%d %H:%M:%S")
+            datetime.now() - datetime.strptime(matches.group(1).strip(), "%H:%M:%S")
             if matches else None
         )
 
