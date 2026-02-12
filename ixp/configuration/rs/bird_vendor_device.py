@@ -1,7 +1,7 @@
 import ipaddress
 import logging
 import os
-from datetime import datetime
+from datetime import date, datetime
 from typing import Callable
 
 from Kathara.model.Machine import Machine
@@ -134,10 +134,14 @@ class BirdVendorDevice(VendorDevice):
         remote_as = matches.group(1) if matches else None
 
         matches = BIRD_SESSION_UPTIME.search(bgp_output)
-        uptime = (
-            datetime.now() - datetime.strptime(matches.group(1).strip(), "%H:%M:%S")
-            if matches else None
-        )
+        try:
+            uptime = (
+                datetime.now() - datetime.strptime(matches.group(1).strip(), "%Y-%m-%d %H:%M:%S")
+                if matches else None
+            )
+        except:
+            t = datetime.strptime(matches.group(1).strip(), "%H:%M:%S").time()
+            uptime = datetime.now() - datetime.combine(date.today(), t) if matches else None
 
         return {"remote_as": int(remote_as) if remote_as else None, "uptime": uptime}
 
