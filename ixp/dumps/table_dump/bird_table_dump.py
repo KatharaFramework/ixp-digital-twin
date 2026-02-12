@@ -36,6 +36,19 @@ class BirdTableDump(TableDump):
                     'attributes': {}
                 }
                 routes.append(current_route)
+                continue
+            else:
+                match = re.match(rf'\w+\s+\[(\w+) (.*?)\]', line)
+                if match:
+                    neighbor_name, timestamp = match.groups()
+                    current_route = {
+                        'network': current_route['network'],
+                        'neighbor_name': neighbor_name,
+                        'timestamp': timestamp,
+                        'attributes': {}
+                    }
+                    routes.append(current_route)
+                    continue
 
             # Match next hop
             match = re.match(rf'^via (.+) on (\w+)', line)
@@ -63,7 +76,16 @@ class BirdTableDump(TableDump):
                     current_route['attributes'][attr] = value
                 continue
 
+        missing_ases = set()
         for route in routes:
-            for router in self.entries[f'as{route["as"]}'].routers.values():
+            as_name = f'as{route["as"]}'
+            if as_name not in self.entries:
+                missing_ases.add(as_name)
+                continue
+
+            for router in self.entries[as_name].routers.values():
                 if router.has_peering(route['neighbor_ip_address']):
                     router.add_route(str(route['network']), route['attributes']['as_path'])
+
+        for as_name in missing_ases:
+            logging.warning(f"`{as_name}` not found in members configuration! Skipped...")

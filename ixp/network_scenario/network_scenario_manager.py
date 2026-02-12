@@ -11,11 +11,10 @@ from Kathara.model.Machine import Machine
 from ..foundation.dumps.table_dump.table_dump import TableDump
 from ..foundation.exceptions import TableDumpError
 from ..globals import EXTERNAL_FABRIC_CD_NAME, L2_FABRIC_CD_NAME, SWITCH_DEVICE_NAME, GATEWAY_DEVICE_NAME, \
-    BACKBONE_CD_NAME
+    BLACKLISTED_CDS
 from ..model.bgp_neighbour import BGPRouter
 from ..model.collision_domain import CollisionDomain
 from ..settings.settings import Settings
-from ..utils import chunk_list
 
 
 class NetworkScenarioManager:
@@ -84,7 +83,7 @@ class NetworkScenarioManager:
         switch_cds = set()
         for device in self._net_scenario.machines.values():
             for interface in device.interfaces.values():
-                if interface.link.name == BACKBONE_CD_NAME:
+                if interface.link.name in BLACKLISTED_CDS:
                     continue
 
                 switch_cds.add(interface.link.name)
@@ -201,10 +200,7 @@ class NetworkScenarioManager:
         deployed_machines = len(main_chunk)
         logging.info(f"Deployed devices: {deployed_machines}/{len(machines)}")
 
-        for chunk in chunk_list(list(machines - main_chunk), 5):
-            Kathara.get_instance().deploy_lab(self._net_scenario, selected_machines=set(chunk))
-            deployed_machines += len(chunk)
-            logging.info(f"Deployed devices: {deployed_machines}/{len(machines)}")
+        Kathara.get_instance().deploy_lab(self._net_scenario, selected_machines=set(machines - main_chunk))
 
         self.on_deploy()
 

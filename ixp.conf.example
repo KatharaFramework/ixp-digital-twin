@@ -22,7 +22,15 @@
             "image": "<Docker image to use for the route server>",
             "as_num": <AS number of the RS, as integer>,
             "config": "<router configuration file or path of the RS>",
-            "address": "<IP address of the RS, without netmask, either IPv4 and IPv6 are allowed>"
+            "address": "<IP address of the RS, without netmask, either IPv4 and IPv6 are allowed>",
+            "options": {
+                <dict of additional configurations for the route server>
+                "birdwatcher": {
+                    <configuration of birdwatcher>
+                    "port": <birdwatcher TCP port to expose, example 29184>,
+                    "config": "<configuration file of birdwatcher, relative to the resources folder>"
+                }
+            }
         }
     },
     "rpki": [

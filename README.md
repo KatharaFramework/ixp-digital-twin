@@ -68,6 +68,18 @@ For more details refer to: https://github.com/KatharaFramework/ixp-quarantine-da
 - Docker (for running route server containers)
 - Network interface for external LAN connectivity
 
+### Building BIRD with Birdwatcher
+
+The IXP Digital Twin includes support for birdwatcher, which provides an HTTP API for
+monitoring and managing BIRD routing daemon instances.
+
+To build the BIRD route server image with birdwatcher integration:
+```bash
+docker build -f dockerfiles/birdwatcher.Dockerfile -t kathara/bird2-birdwatcher:2.0.8 dockerfiles/
+```
+
+**NOTE**: remember to change the image name in the `ixp.conf` file.
+
 ## Getting Started
 
 1. **Configure the environment**:

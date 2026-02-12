@@ -16,11 +16,6 @@ def class_for_name(module_name: str, class_name: str) -> Any:
     return getattr(m, camel_case_class_name)
 
 
-def chunk_list(input_list: list, size: int) -> Generator[list, None, None]:
-    for i in range(0, len(input_list), size):
-        yield input_list[i: i + size]
-
-
 def open_terminal(device: Machine) -> None:
     command = (
             '%s -c "from Kathara.manager.Kathara import Kathara; '
