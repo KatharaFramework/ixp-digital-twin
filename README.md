@@ -17,6 +17,9 @@ requirements of the IXP. Thanks to the Kathará external feature, it is possible
 network, so in the onboarding process customers can validate their configurations in the emulated environment before
 being attached to the production network.
 
+## Tutorial
+A comprehensive tutorial is available in the [wiki](https://github.com/KatharaFramework/ixp-digital-twin/wiki), explaining how to configure the digital twin, its [management dashboard](https://github.com/KatharaFramework/ixp-digital-twin-dashboard), and the [quarantine dashboard](https://github.com/KatharaFramework/ixp-quarantine-dashboard).
+
 ## Why Use IXP Digital Twin?
 
 - **Test Environment**: Run tests on configurations before applying them in production, ensuring stability and reducing
