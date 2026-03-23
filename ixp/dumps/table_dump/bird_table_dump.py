@@ -65,12 +65,16 @@ class BirdTableDump(TableDump):
                     current_route['attributes'][attr] = [ipaddress.ip_address(value) for value in value.split(' ')]
                 elif attr == 'as_path':
                     current_route['attributes'][attr] = []
-                    for value in value.split(' '):
-                        value = ast.literal_eval(value)
-                        if isinstance(value, set):
-                            current_route['attributes'][attr].append(value.pop())
+                    # If there is an AS-SET, eg, 1 2 {3 4}, we create the following list: 1, 2, {3 4}
+                    for v in re.findall(r'\{[^}]*\}|\S+', value):
+                        if v.startswith('{'):
+                            # We encountered an AS-SET: {3 4}, convert to {3, 4}
+                            v = v.replace(' ', ', ')
+                        v = ast.literal_eval(v)
+                        if isinstance(v, set):
+                            current_route['attributes'][attr].append(v.pop())
                         else:
-                            current_route['attributes'][attr].append(value)
+                            current_route['attributes'][attr].append(v)
                     current_route['as'] = current_route["attributes"][attr][0]
                 else:
                     current_route['attributes'][attr] = value
