@@ -292,9 +292,10 @@ class NetworkScenarioManager:
             except_machines = set()
 
         logging.info("Undeploying network scenario...")
-        Kathara.get_instance().undeploy_lab(
-            lab=self._net_scenario,
-            selected_machines=set(self._net_scenario.machines.keys()) - except_machines,
+        machine_manager = Kathara.get_instance().manager.docker_machine
+        machine_manager.undeploy(
+            self._net_scenario.hash,
+            selected_machines=set(self._net_scenario.machines.keys()) - except_machines
         )
         logging.success("Network scenario undeployed!")
 
