@@ -89,7 +89,7 @@ class NetworkScenarioManager:
                 switch_cds.add(interface.link.name)
                 self._net_scenario.update_file_from_list(arp_entries_cmd, f"{device.name}.startup")
 
-        host_cd = self._attach_host_interface()
+        host_cd = self.attach_host_interface()
         if host_cd is not None:
             switch_cds.add(host_cd.name)
 
@@ -168,7 +168,7 @@ class NetworkScenarioManager:
 
         return device
 
-    def _attach_host_interface(self) -> Link | None:
+    def attach_host_interface(self) -> Link | None:
         host_iface = Settings.get_instance().host_interface
 
         if host_iface is None:
@@ -229,8 +229,9 @@ class NetworkScenarioManager:
     def undeploy_devices(devices: dict[str, Machine]) -> None:
         logging.info("Undeploying removed devices...")
 
+        machine_manager = Kathara.get_instance().manager.docker_machine
         for name, device in devices.items():
-            Kathara.get_instance().undeploy_machine(device)
+            machine_manager.undeploy(device.lab.hash, selected_machines={device.name})
 
         logging.success("Devices undeployed!")
 
