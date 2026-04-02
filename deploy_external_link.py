@@ -21,4 +21,6 @@ if __name__ == "__main__":
     if host_cd is not None:
         Kathara.get_instance().deploy_link(host_cd)
 
+    net_scenario_manager.on_deploy()
+
     logging.success("External link deployed successfully!")
