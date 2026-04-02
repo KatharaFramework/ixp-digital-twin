@@ -242,22 +242,20 @@ class NetworkScenarioManager:
         if host_iface is None:
             return
 
-        logging.info(f"Setting interface {host_iface} to promiscuous mode...")
-
         from pyroute2 import IPRoute
-        ip = IPRoute()
+        ip = IPRoute(use_event_loop=False)
 
         interface_indexes = ip.link_lookup(ifname=host_iface)
-        ip.link(
-            "set",
-            index=interface_indexes[0],
-            promiscuity=1,
-            state="up"
-        )
-
-        ip.close()
-
-        logging.info(f"Interface {host_iface} set to promiscuous mode.")
+        if interface_indexes:
+            logging.info(f"Setting interface {host_iface} to promiscuous mode...")
+            ip.link(
+                "set",
+                index=interface_indexes[0],
+                promiscuity=1,
+                state="up"
+            )
+            ip.close()
+            logging.info(f"Interface {host_iface} set to promiscuous mode.")
 
     @staticmethod
     def copy_and_exec_by_device_info(device_info: dict) -> int:
