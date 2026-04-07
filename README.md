@@ -6,7 +6,7 @@ configurations. It allows IXPs to test and validate route server configurations 
 ## Overview
 
 The tool analyzes configuration files and generates a Kathará network scenario, where the route-servers of the emulated
-IXP expose the same information of the real-world ones.
+IXP expose the same information as the real-world ones.
 
 Route servers Docker images are based on the same version of the software used in the production environment.
 Peers are emulated as FRRouting routers and inject the same routes, with the same origin AS and AS-path, as the real
@@ -17,8 +17,14 @@ requirements of the IXP. Thanks to the Kathará external feature, it is possible
 network, so in the onboarding process customers can validate their configurations in the emulated environment before
 being attached to the production network.
 
+For more details, please refer to the official [wiki](https://github.com/KatharaFramework/ixp-digital-twin/wiki).
+
 ## Tutorial
-A comprehensive tutorial is available in the [wiki](https://github.com/KatharaFramework/ixp-digital-twin/wiki), explaining how to configure the digital twin, its [management dashboard](https://github.com/KatharaFramework/ixp-digital-twin-dashboard), and the [quarantine dashboard](https://github.com/KatharaFramework/ixp-quarantine-dashboard).
+
+A comprehensive [tutorial](https://github.com/KatharaFramework/ixp-digital-twin/wiki/Tutorial) is available in
+the [wiki](https://github.com/KatharaFramework/ixp-digital-twin/wiki), explaining how to configure the digital twin,
+its [management dashboard](https://github.com/KatharaFramework/ixp-digital-twin-dashboard), and
+the [quarantine dashboard](https://github.com/KatharaFramework/ixp-quarantine-dashboard).
 
 ## Why Use IXP Digital Twin?
 
@@ -59,6 +65,9 @@ These quarantine checks ensure that all configurations are stable, secure, and f
 allowing new devices or customers to connect to the production network. This greatly reduces the risk of operational
 disruptions and enhances the reliability of the IXP environment.
 
+All the details of the quarantine checks are available in
+the [wiki](https://github.com/KatharaFramework/ixp-digital-twin/wiki/Quarantine-Checks).
+
 If you are interested in the quarantine checks, we also offer a GUI to allow customers to run the checks directly from a
 browser. The GUI shows information about the current status of the checks providing suggestions on how to fix the
 configuration in case of failures.
@@ -71,17 +80,13 @@ For more details refer to: https://github.com/KatharaFramework/ixp-quarantine-da
 - Docker (for running route server containers)
 - Network interface for external LAN connectivity
 
-### Building BIRD with Birdwatcher
+### Route Server Docker Images
 
-The IXP Digital Twin includes support for birdwatcher, which provides an HTTP API for
-monitoring and managing BIRD routing daemon instances.
+We provide pre-built Docker images for BIRD, BIRD2, BIRD3 (all with birdwatcher support), and OpenBGPD route servers.
+For more details on the available images, please refer to the [Docker-Images repository](https://github.com/KatharaFramework/Docker-Images) or the official [Docker Hub](https://hub.docker.com/u/kathara).
 
-To build the BIRD route server image with birdwatcher integration:
-```bash
-docker build -f dockerfiles/birdwatcher.Dockerfile -t kathara/bird2-birdwatcher:2.0.8 dockerfiles/
-```
-
-**NOTE**: remember to change the image name in the `ixp.conf` file.
+To build a custom Docker image (e.g., with a different version of BIRD),
+see [Build a Custom Docker Image](Build-Custom-Docker-Image).
 
 ## Getting Started
 
@@ -152,6 +157,9 @@ The `ixp.conf` file contains the following main sections:
 - **route_servers**: Configuration for BGP route servers
 - **rpki**: RPKI validation server settings
 - **quarantine**: Security and connectivity validation checks
+
+For more details, please refer to
+the [wiki](https://github.com/KatharaFramework/ixp-digital-twin/wiki/Configuration-Reference).
 
 ## Support Us
 
