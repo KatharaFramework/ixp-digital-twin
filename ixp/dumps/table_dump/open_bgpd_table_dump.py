@@ -6,6 +6,18 @@ import re
 from ...foundation.dumps.table_dump.table_dump import TableDump
 
 
+def parse_as_path(path: str):
+    tokens = re.findall(r"\{[^}]*\}|\d+", path)
+    out = []
+    for t in tokens:
+        if t.startswith("{"):
+            as_set = [int(x) for x in re.findall(r"\d+", t)]
+            out.append(as_set[0])
+        else:
+            out.append(int(t))
+
+    return out
+
 class OpenBgpdTableDump(TableDump):
     def load_from_file(self, path: str) -> None:
         if not os.path.exists(path):
@@ -28,7 +40,7 @@ class OpenBgpdTableDump(TableDump):
             if rpki == "!":
                 continue
 
-            path_list = list(filter(lambda x: x not in ["i", "e", "?", ""], re.split(r"\s+", path)))
+            path_list = parse_as_path(path)
             neighbor_as = path_list[0] if path_list else None
 
             if not neighbor_as:
