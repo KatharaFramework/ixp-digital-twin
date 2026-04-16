@@ -4,7 +4,6 @@ import os
 
 from Kathara.setting.Setting import Setting
 
-from ixp.colored_logging import set_logging
 from ixp.configuration.frr_scenario_configuration_applier import FrrScenarioConfigurationApplier
 from ixp.foundation.dumps.member_dump.member_dump_factory import MemberDumpFactory
 from ixp.foundation.dumps.table_dump.table_dump_factory import TableDumpFactory
@@ -31,8 +30,6 @@ if __name__ == "__main__":
         help='Limit the number of devices to reload.'
     )
     args = parser.parse_args()
-
-    set_logging()
 
     if args.rs_only:
         logging.warning("Reloading RS configurations only! Peerings will not be updated!")

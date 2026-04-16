@@ -6,7 +6,6 @@ import re
 
 from Kathara.setting.Setting import Setting
 
-from ixp.colored_logging import set_logging
 from ixp.foundation.dumps.member_dump.member_dump_factory import MemberDumpFactory
 from ixp.foundation.quarantine.action_result import WARNING
 from ixp.globals import RESOURCES_FOLDER
@@ -38,8 +37,6 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-
-    set_logging()
 
     settings = Settings.get_instance()
     settings.load_from_disk()
